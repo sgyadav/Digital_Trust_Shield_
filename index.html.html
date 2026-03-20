@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Trust Shield v2 — AI Forensics Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #020408;
+  --deep-navy: #030d1a;
+  --navy: #051428;
+  --neon-green: #00ff88;
+  --neon-cyan: #00e5ff;
+  --neon-blue: #0066ff;
+  --neon-red: #ff2244;
+  --neon-yellow: #ffdd00;
+  --neon-purple: #bf5fff;
+  --neon-orange: #ff8800;
+  --glass-bg: rgba(0, 20, 40, 0.55);
+  --glass-border: rgba(0, 229, 255, 0.15);
+  --glass-border-hover: rgba(0, 255, 136, 0.4);
+  --text-primary: #e0f4ff;
+  --text-muted: #5a8fa8;
+  --glow-green: 0 0 20px rgba(0,255,136,0.6),0 0 60px rgba(0,255,136,0.2);
+  --glow-cyan: 0 0 20px rgba(0,229,255,0.6),0 0 60px rgba(0,229,255,0.2);
+  --glow-red: 0 0 20px rgba(255,34,68,0.6);
+  --glow-purple: 0 0 20px rgba(191,95,255,0.6);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--text-primary);font-family:'Rajdhani',sans-serif;font-size:16px;overflow-x:hidden}
+#matrix-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.07;pointer-events:none}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.012) 2px,rgba(0,229,255,.012) 4px);pointer-events:none;z-index:9999}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(2,4,8,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,.1)}
+.nav-logo{font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700;color:var(--neon-cyan);text-shadow:var(--glow-cyan);letter-spacing:2px;display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.nav-logo svg{width:28px;height:28px;stroke:var(--neon-cyan);fill:none;filter:drop-shadow(0 0 8px var(--neon-cyan))}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-family:'Rajdhani',sans-serif;font-weight:500;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);text-decoration:none;transition:color .3s,text-shadow .3s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--neon-cyan);transition:width .3s;box-shadow:var(--glow-cyan)}
+.nav-links a:hover{color:var(--neon-cyan);text-shadow:var(--glow-cyan)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{font-family:'Orbitron',monospace;font-size:.7rem;font-weight:600;letter-spacing:2px;padding:.55rem 1.3rem;border:1px solid var(--neon-green);background:transparent;color:var(--neon-green);cursor:pointer;text-transform:uppercase;transition:all .3s;text-decoration:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.nav-cta:hover{background:var(--neon-green);color:var(--black);box-shadow:var(--glow-green)}
+
+/* SECTION */
+section{position:relative;z-index:1}
+.container{max-width:1200px;margin:0 auto;padding:0 2rem}
+.section-header{text-align:center;margin-bottom:4rem}
+.section-tag{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:4px;color:var(--neon-green);text-transform:uppercase;display:block;margin-bottom:.8rem}
+.section-title{font-family:'Orbitron',monospace;font-size:clamp(1.6rem,3.5vw,2.5rem);font-weight:700;line-height:1.2}
+.section-title .accent{color:var(--neon-cyan)}
+.section-title .accent2{color:var(--neon-green)}
+.section-divider{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--neon-cyan),transparent);margin:1.2rem auto 1.5rem}
+.section-subtitle{color:var(--text-muted);font-size:1rem;letter-spacing:.5px;max-width:520px;margin:0 auto;line-height:1.7}
+
+/* GLASS CARD */
+.glass-card{background:var(--glass-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:2px;transition:border-color .4s,box-shadow .4s,transform .4s;position:relative;overflow:hidden}
+.glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon-cyan),transparent);opacity:0;transition:opacity .4s}
+.glass-card:hover{border-color:var(--glass-border-hover);box-shadow:0 0 30px rgba(0,229,255,.08),inset 0 0 30px rgba(0,229,255,.03);transform:translateY(-4px)}
+.glass-card:hover::before{opacity:1}
+
+/* CORNER ACCENTS */
+.ca{position:absolute;width:16px;height:16px}
+.ca-tl{top:0;left:0;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan)}
+.ca-tr{top:0;right:0;border-top:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan)}
+.ca-bl{bottom:0;left:0;border-bottom:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan)}
+.ca-br{bottom:0;right:0;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan)}
+
+/* BUTTONS */
+.btn-primary{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.9rem 2.2rem;background:linear-gradient(135deg,var(--neon-green),var(--neon-cyan));color:var(--black);border:none;cursor:pointer;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all .3s;text-decoration:none;display:inline-block}
+.btn-primary:hover{box-shadow:var(--glow-green);transform:translateY(-2px)}
+.btn-secondary{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:.9rem 2.2rem;border:1px solid rgba(0,229,255,.5);background:rgba(0,229,255,.05);color:var(--neon-cyan);cursor:pointer;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all .3s;text-decoration:none;display:inline-block}
+.btn-secondary:hover{background:rgba(0,229,255,.12);box-shadow:var(--glow-cyan);transform:translateY(-2px)}
+.btn-purple{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.9rem 2.2rem;background:linear-gradient(135deg,var(--neon-purple),var(--neon-blue));color:#fff;border:none;cursor:pointer;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all .3s;text-decoration:none;display:inline-block}
+.btn-purple:hover{box-shadow:var(--glow-purple);transform:translateY(-2px)}
+
+/* FADE IN */
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+
+/* STATUS BADGE */
+.status-badge{display:inline-flex;align-items:center;gap:.5rem;font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--neon-green);letter-spacing:3px;text-transform:uppercase;margin-bottom:1.5rem;padding:.4rem 1.2rem;border:1px solid rgba(0,255,136,.3);background:rgba(0,255,136,.05);clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--neon-green);animation:blink 1.2s ease-in-out infinite;box-shadow:0 0 8px var(--neon-green)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ======================== HERO ======================== */
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:8rem 2rem 4rem;background:radial-gradient(ellipse at 50% 40%,rgba(0,102,255,.08) 0%,transparent 65%),radial-gradient(ellipse at 80% 20%,rgba(0,229,255,.05) 0%,transparent 50%);text-align:center}
+.hero-inner{max-width:860px}
+.hero-shield{width:100px;height:110px;margin:0 auto 2.5rem;animation:shield-pulse 3s ease-in-out infinite}
+@keyframes shield-pulse{0%,100%{filter:drop-shadow(0 0 15px rgba(0,229,255,.7)) drop-shadow(0 0 35px rgba(0,229,255,.3))}50%{filter:drop-shadow(0 0 30px rgba(0,255,136,.8)) drop-shadow(0 0 60px rgba(0,255,136,.3))}}
+.hero-title{font-family:'Orbitron',monospace;font-size:clamp(2rem,5vw,3.6rem);font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:1rem;background:linear-gradient(135deg,#fff 0%,var(--neon-cyan) 50%,var(--neon-green) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-size:1.15rem;font-weight:400;color:var(--text-muted);letter-spacing:1px;margin-bottom:1rem;line-height:1.6}
+.typing-container{font-family:'Share Tech Mono',monospace;font-size:.95rem;color:var(--neon-cyan);margin-bottom:2.5rem;min-height:1.5rem}
+.cursor{display:inline-block;width:2px;height:1rem;background:var(--neon-cyan);margin-left:2px;animation:blink .8s step-end infinite;vertical-align:middle}
+.hero-buttons{display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap}
+
+/* MODULE CARDS BELOW HERO */
+.module-strip{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:3.5rem}
+.mod-pill{font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:2px;padding:.5rem 1.2rem;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.04);color:var(--neon-cyan);display:flex;align-items:center;gap:.5rem;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.mod-pill span{width:6px;height:6px;border-radius:50%;display:inline-block}
+.mod-pill .dot-green{background:var(--neon-green);box-shadow:0 0 8px var(--neon-green)}
+.mod-pill .dot-cyan{background:var(--neon-cyan);box-shadow:0 0 8px var(--neon-cyan)}
+.mod-pill .dot-purple{background:var(--neon-purple);box-shadow:0 0 8px var(--neon-purple)}
+.mod-pill .dot-orange{background:var(--neon-orange);box-shadow:0 0 8px var(--neon-orange)}
+
+/* SCROLL */
+.scroll-indicator{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;opacity:.4;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+.scroll-indicator span{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:3px;color:var(--neon-cyan)}
+.scroll-arrow{width:20px;height:20px;border-right:1px solid var(--neon-cyan);border-bottom:1px solid var(--neon-cyan);transform:rotate(45deg)}
+
+/* ======================== TOOLS HUB ======================== */
+#tools{padding:7rem 2rem}
+.tools-tabs{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
+.tab-btn{font-family:'Orbitron',monospace;font-size:.72rem;font-weight:600;letter-spacing:2px;padding:.65rem 1.5rem;border:1px solid rgba(0,229,255,.2);background:transparent;color:var(--text-muted);cursor:pointer;text-transform:uppercase;transition:all .3s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
+.tab-btn:hover{color:var(--neon-cyan);border-color:rgba(0,229,255,.5)}
+.tab-btn.active-url{color:var(--neon-cyan);border-color:var(--neon-cyan);background:rgba(0,229,255,.08);box-shadow:0 0 15px rgba(0,229,255,.1)}
+.tab-btn.active-img{color:var(--neon-green);border-color:var(--neon-green);background:rgba(0,255,136,.08);box-shadow:0 0 15px rgba(0,255,136,.1)}
+.tab-btn.active-vid{color:var(--neon-purple);border-color:var(--neon-purple);background:rgba(191,95,255,.08);box-shadow:0 0 15px rgba(191,95,255,.1)}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fade-up .4s ease}
+@keyframes fade-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---- URL PANEL ---- */
+.url-panel-inner{max-width:780px;margin:0 auto}
+.terminal-header{display:flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;background:rgba(0,229,255,.06);border-bottom:1px solid var(--glass-border)}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.t-red{background:#ff5f57}.t-yellow{background:#febc2e}.t-green{background:#28c840}
+.terminal-title{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--text-muted);margin-left:.5rem;letter-spacing:2px}
+.terminal-body{padding:2rem}
+.t-label{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--neon-cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:.5rem}
+.demo-input-row{display:flex;gap:1rem;margin-bottom:1.5rem}
+.cyber-input{width:100%;background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.2);color:var(--text-primary);font-family:'Share Tech Mono',monospace;font-size:.85rem;padding:.9rem 1.2rem;outline:none;transition:border-color .3s,box-shadow .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.cyber-input:focus{border-color:var(--neon-cyan);box-shadow:0 0 15px rgba(0,229,255,.15)}
+.cyber-input::placeholder{color:var(--text-muted)}
+.demo-type-select{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.type-btn{font-family:'Share Tech Mono',monospace;font-size:.7rem;padding:.4rem 1rem;border:1px solid rgba(0,229,255,.2);background:transparent;color:var(--text-muted);cursor:pointer;letter-spacing:1px;transition:all .2s}
+.type-btn:hover,.type-btn.active{border-color:var(--neon-cyan);color:var(--neon-cyan);background:rgba(0,229,255,.06)}
+.verify-btn{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;letter-spacing:2px;padding:.9rem 2rem;background:linear-gradient(135deg,var(--neon-green),var(--neon-cyan));color:var(--black);border:none;cursor:pointer;text-transform:uppercase;transition:all .3s;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);white-space:nowrap}
+.verify-btn:hover{box-shadow:var(--glow-green);transform:scale(1.02)}
+.loading-bar{height:3px;background:rgba(0,229,255,.1);overflow:hidden;margin:1.5rem 0;display:none}
+.loading-bar.active{display:block}
+.loading-fill{height:100%;background:linear-gradient(90deg,var(--neon-green),var(--neon-cyan),var(--neon-green));background-size:200% 100%;animation:slide-gradient 1s linear infinite;width:0%;transition:width .1s linear}
+@keyframes slide-gradient{0%{background-position:0% 0%}100%{background-position:200% 0%}}
+.loading-steps{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--neon-cyan);margin-bottom:1.5rem;display:none;min-height:1.2rem}
+.loading-steps.active{display:block}
+.result-box{display:none;padding:2rem;border-radius:2px;animation:fade-up .5s ease}
+.result-box.trusted{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.3)}
+.result-box.suspicious{background:rgba(255,221,0,.07);border:1px solid rgba(255,221,0,.3)}
+.result-box.fake{background:rgba(255,34,68,.07);border:1px solid rgba(255,34,68,.3)}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.result-verdict{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;letter-spacing:3px;text-transform:uppercase}
+.verdict-trusted{color:var(--neon-green);text-shadow:var(--glow-green)}
+.verdict-suspicious{color:var(--neon-yellow);text-shadow:0 0 20px rgba(255,221,0,.5)}
+.verdict-fake{color:var(--neon-red);text-shadow:var(--glow-red)}
+.trust-score{font-family:'Orbitron',monospace;font-size:2.5rem;font-weight:900;line-height:1}
+.score-label{font-size:.7rem;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase}
+.result-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.metric{text-align:center;padding:.8rem;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06)}
+.metric-val{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;display:block;margin-bottom:.2rem}
+.metric-key{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
+.result-detail{font-size:.9rem;color:var(--text-muted);line-height:1.6}
+.result-tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.r-tag{font-family:'Share Tech Mono',monospace;font-size:.65rem;padding:.25rem .7rem;border-radius:2px;letter-spacing:1px;text-transform:uppercase}
+.tag-green{background:rgba(0,255,136,.12);border:1px solid rgba(0,255,136,.3);color:var(--neon-green)}
+.tag-yellow{background:rgba(255,221,0,.12);border:1px solid rgba(255,221,0,.3);color:var(--neon-yellow)}
+.tag-red{background:rgba(255,34,68,.12);border:1px solid rgba(255,34,68,.3);color:var(--neon-red)}
+.tag-blue{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);color:var(--neon-cyan)}
+.tag-purple{background:rgba(191,95,255,.12);border:1px solid rgba(191,95,255,.3);color:var(--neon-purple)}
+
+/* ======================== IMAGE FORENSICS ======================== */
+.img-forensics-layout{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start}
+.upload-zone{border:2px dashed rgba(0,255,136,.3);background:rgba(0,255,136,.03);padding:3rem 2rem;text-align:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--neon-green);background:rgba(0,255,136,.07);box-shadow:0 0 30px rgba(0,255,136,.1)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{width:60px;height:60px;margin:0 auto 1.2rem;border:2px solid rgba(0,255,136,.4);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.upload-icon svg{width:28px;height:28px;stroke:var(--neon-green);filter:drop-shadow(0 0 8px var(--neon-green))}
+.upload-zone h4{font-family:'Orbitron',monospace;font-size:.9rem;color:var(--neon-green);letter-spacing:1px;margin-bottom:.5rem}
+.upload-zone p{color:var(--text-muted);font-size:.85rem}
+.upload-zone .file-types{display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
+.file-type-tag{font-family:'Share Tech Mono',monospace;font-size:.65rem;padding:.2rem .6rem;border:1px solid rgba(0,255,136,.25);color:rgba(0,255,136,.6);letter-spacing:1px}
+
+/* Image preview */
+.img-preview-container{position:relative;background:rgba(0,0,0,.4);border:1px solid rgba(0,255,136,.2);overflow:hidden;min-height:200px;display:flex;align-items:center;justify-content:center}
+.img-preview{max-width:100%;max-height:300px;object-fit:contain;display:none}
+.img-placeholder{text-align:center;padding:3rem 2rem}
+.img-placeholder svg{width:48px;height:48px;stroke:rgba(0,229,255,.25);fill:none;margin-bottom:1rem}
+.img-placeholder p{color:var(--text-muted);font-size:.85rem;font-family:'Share Tech Mono',monospace}
+
+/* Analysis options */
+.analysis-options{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1.5rem 0}
+.analysis-opt{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border:1px solid rgba(0,255,136,.15);background:rgba(0,255,136,.04);cursor:pointer;transition:all .3s}
+.analysis-opt:hover,.analysis-opt.selected{border-color:rgba(0,255,136,.4);background:rgba(0,255,136,.09)}
+.analysis-opt input{accent-color:var(--neon-green);width:14px;height:14px}
+.analysis-opt label{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--text-muted);letter-spacing:1px;cursor:pointer}
+.analysis-opt:hover label,.analysis-opt.selected label{color:var(--neon-green)}
+
+.scan-btn-green{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;letter-spacing:2px;padding:.9rem 0;width:100%;background:linear-gradient(135deg,rgba(0,255,136,.15),rgba(0,255,136,.05));color:var(--neon-green);border:1px solid rgba(0,255,136,.4);cursor:pointer;text-transform:uppercase;transition:all .3s;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)}
+.scan-btn-green:hover{background:linear-gradient(135deg,rgba(0,255,136,.25),rgba(0,255,136,.1));box-shadow:var(--glow-green)}
+
+/* Image forensics result */
+.img-result-panel{padding:0;overflow:hidden}
+.img-result-panel .panel-header{padding:1.2rem 1.5rem;background:rgba(0,255,136,.06);border-bottom:1px solid rgba(0,255,136,.15);font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;color:var(--neon-green);letter-spacing:2px;display:flex;align-items:center;justify-content:space-between}
+.img-result-panel .panel-body{padding:1.5rem}
+
+/* Radar / visual scan overlay */
+.scan-overlay-wrap{position:relative;background:#000;border:1px solid rgba(0,255,136,.15);overflow:hidden;margin-bottom:1.5rem}
+.scan-overlay-wrap img{width:100%;display:block;opacity:.7}
+.scan-overlay-wrap canvas.heatmap{position:absolute;inset:0;width:100%;height:100%;opacity:.65}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon-green),transparent);box-shadow:0 0 12px var(--neon-green);animation:scan-move 2.5s linear infinite;top:0}
+@keyframes scan-move{0%{top:0}100%{top:100%}}
+
+/* Forensic bars */
+.forensic-metrics{display:flex;flex-direction:column;gap:.9rem}
+.f-metric{display:flex;flex-direction:column;gap:.3rem}
+.f-metric-header{display:flex;justify-content:space-between;align-items:center}
+.f-metric-name{font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase}
+.f-metric-val{font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700}
+.f-bar{height:6px;background:rgba(255,255,255,.06);border-radius:0;overflow:hidden;position:relative}
+.f-bar-fill{height:100%;border-radius:0;transition:width 1.2s ease;width:0}
+.f-bar-fill.green{background:linear-gradient(90deg,var(--neon-green),rgba(0,255,136,.5));box-shadow:0 0 8px var(--neon-green)}
+.f-bar-fill.red{background:linear-gradient(90deg,var(--neon-red),rgba(255,34,68,.5));box-shadow:0 0 8px var(--neon-red)}
+.f-bar-fill.yellow{background:linear-gradient(90deg,var(--neon-yellow),rgba(255,221,0,.5));box-shadow:0 0 8px var(--neon-yellow)}
+.f-bar-fill.cyan{background:linear-gradient(90deg,var(--neon-cyan),rgba(0,229,255,.5));box-shadow:0 0 8px var(--neon-cyan)}
+.f-bar-fill.purple{background:linear-gradient(90deg,var(--neon-purple),rgba(191,95,255,.5));box-shadow:0 0 8px var(--neon-purple)}
+
+/* ELA Canvas */
+.ela-section{margin-top:1.5rem}
+.ela-label{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--neon-cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem}
+.ela-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
+.ela-item{border:1px solid rgba(0,229,255,.12);overflow:hidden;position:relative}
+.ela-item canvas{width:100%;display:block}
+.ela-item-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--text-muted);letter-spacing:1px;text-align:center;padding:.3rem;background:rgba(0,0,0,.5)}
+
+/* ======================== VIDEO AI DETECTOR ======================== */
+.video-layout{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start}
+.video-upload-zone{border:2px dashed rgba(191,95,255,.3);background:rgba(191,95,255,.03);padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.video-upload-zone:hover,.video-upload-zone.dragover{border-color:var(--neon-purple);background:rgba(191,95,255,.08);box-shadow:0 0 30px rgba(191,95,255,.1)}
+.video-upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.video-upload-icon{width:60px;height:60px;margin:0 auto 1.2rem;border:2px solid rgba(191,95,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.video-upload-icon svg{width:28px;height:28px;stroke:var(--neon-purple);filter:drop-shadow(0 0 8px var(--neon-purple))}
+.video-upload-zone h4{font-family:'Orbitron',monospace;font-size:.9rem;color:var(--neon-purple);letter-spacing:1px;margin-bottom:.5rem}
+.video-upload-zone p{color:var(--text-muted);font-size:.85rem}
+
+/* Video player */
+.video-player-wrap{position:relative;background:#000;border:1px solid rgba(191,95,255,.2);overflow:hidden;min-height:200px}
+video#vid-preview{width:100%;display:none;max-height:280px;object-fit:contain}
+.vid-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:1rem}
+.vid-placeholder svg{width:48px;height:48px;stroke:rgba(191,95,255,.3);fill:none}
+.vid-placeholder p{color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:.8rem;letter-spacing:1px}
+.vid-scan-overlay{position:absolute;inset:0;pointer-events:none;display:none}
+.vid-scan-overlay.active{display:block}
+.vid-scan-h{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon-purple),transparent);box-shadow:0 0 10px var(--neon-purple);animation:scan-move 1.8s linear infinite}
+.vid-scan-v{position:absolute;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,var(--neon-purple),transparent);box-shadow:0 0 10px var(--neon-purple);animation:vscan-move 2.2s linear infinite}
+@keyframes vscan-move{0%{left:0}100%{left:100%}}
+.face-box{position:absolute;border:2px solid;display:none}
+.face-box.real{border-color:var(--neon-green);box-shadow:0 0 10px rgba(0,255,136,.5)}
+.face-box.fake-face{border-color:var(--neon-red);box-shadow:0 0 10px rgba(255,34,68,.5)}
+.face-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:1px;padding:.15rem .4rem;position:absolute;top:-22px;left:0}
+.face-label.real-lbl{background:rgba(0,255,136,.2);color:var(--neon-green)}
+.face-label.fake-lbl{background:rgba(255,34,68,.2);color:var(--neon-red)}
+
+/* Waveform */
+.waveform-section{margin:1rem 0}
+.waveform-label{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--neon-purple);letter-spacing:2px;text-transform:uppercase;margin-bottom:.5rem}
+canvas#waveform{width:100%;height:60px;border:1px solid rgba(191,95,255,.15);background:rgba(0,0,0,.4)}
+
+/* Video analysis options */
+.vid-analysis-opts{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1.5rem 0}
+.vid-opt{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border:1px solid rgba(191,95,255,.15);background:rgba(191,95,255,.04);cursor:pointer;transition:all .3s}
+.vid-opt:hover,.vid-opt.selected{border-color:rgba(191,95,255,.4);background:rgba(191,95,255,.09)}
+.vid-opt input{accent-color:var(--neon-purple);width:14px;height:14px}
+.vid-opt label{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--text-muted);letter-spacing:1px;cursor:pointer}
+.vid-opt:hover label,.vid-opt.selected label{color:var(--neon-purple)}
+
+.scan-btn-purple{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;letter-spacing:2px;padding:.9rem 0;width:100%;background:linear-gradient(135deg,rgba(191,95,255,.15),rgba(191,95,255,.05));color:var(--neon-purple);border:1px solid rgba(191,95,255,.4);cursor:pointer;text-transform:uppercase;transition:all .3s;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)}
+.scan-btn-purple:hover{background:linear-gradient(135deg,rgba(191,95,255,.25),rgba(191,95,255,.1));box-shadow:var(--glow-purple)}
+
+/* Video result */
+.vid-result-panel{padding:0;overflow:hidden;display:none}
+.vid-result-panel.show{display:block;animation:fade-up .5s ease}
+.vr-header{padding:1.2rem 1.5rem;border-bottom:1px solid rgba(191,95,255,.15);display:flex;align-items:center;justify-content:space-between}
+.vr-header .vr-verdict{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;letter-spacing:3px}
+.vr-body{padding:1.5rem}
+
+/* Confidence donut */
+.donut-row{display:flex;gap:1.5rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.donut-wrap{position:relative;width:110px;height:110px;flex-shrink:0}
+.donut-wrap canvas{width:110px;height:110px}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-pct{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;line-height:1}
+.donut-lbl{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:.2rem}
+
+/* Frame analysis strip */
+.frame-strip-label{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--neon-purple);letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem}
+.frame-strip{display:flex;gap:4px;overflow-x:auto;padding-bottom:.5rem}
+.frame-thumb{width:52px;height:36px;flex-shrink:0;border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden;background:#111;display:flex;align-items:center;justify-content:center}
+.frame-thumb canvas{width:100%;height:100%}
+.frame-badge{position:absolute;bottom:0;left:0;right:0;text-align:center;font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:.5px;padding:1px;text-transform:uppercase}
+.frame-badge.real{background:rgba(0,255,136,.6);color:#000}
+.frame-badge.fake-b{background:rgba(255,34,68,.7);color:#fff}
+.frame-badge.sus{background:rgba(255,221,0,.7);color:#000}
+
+/* Signal grid */
+.signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem}
+.signal-item{padding:.9rem 1rem;border:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.2)}
+.signal-item .s-name{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:.4rem}
+.signal-item .s-val{font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700}
+
+/* ======================== PROBLEM / FEATURES / HOW — Compact ======================== */
+#problem{padding:5rem 2rem;background:linear-gradient(180deg,transparent,rgba(5,20,40,.5),transparent)}
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+.problem-card{padding:2rem 1.8rem;text-align:center}
+.problem-icon{width:56px;height:56px;margin:0 auto 1.2rem;display:flex;align-items:center;justify-content:center;border-radius:50%;position:relative}
+.problem-icon svg{width:30px;height:30px}
+.icon-red{border:1px solid rgba(255,34,68,.4);background:rgba(255,34,68,.08)}
+.icon-red svg{stroke:var(--neon-red);filter:drop-shadow(0 0 8px var(--neon-red))}
+.icon-yellow{border:1px solid rgba(255,221,0,.4);background:rgba(255,221,0,.08)}
+.icon-yellow svg{stroke:var(--neon-yellow);filter:drop-shadow(0 0 8px var(--neon-yellow))}
+.icon-cyan{border:1px solid rgba(0,229,255,.4);background:rgba(0,229,255,.08)}
+.icon-cyan svg{stroke:var(--neon-cyan);filter:drop-shadow(0 0 8px var(--neon-cyan))}
+.problem-card h3{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;letter-spacing:1px;margin-bottom:.7rem;text-transform:uppercase}
+.problem-card p{color:var(--text-muted);font-size:.9rem;line-height:1.7;margin-bottom:1.2rem}
+.stat-number{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1}
+.stat-label{font-size:.7rem;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;margin-top:.3rem}
+.stat-red{color:var(--neon-red);text-shadow:var(--glow-red)}
+.stat-yellow{color:var(--neon-yellow);text-shadow:0 0 20px rgba(255,221,0,.5)}
+.stat-cyan{color:var(--neon-cyan);text-shadow:var(--glow-cyan)}
+
+#how{padding:5rem 2rem;background:linear-gradient(180deg,transparent,rgba(5,20,40,.4),transparent)}
+.steps-timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;position:relative}
+.steps-timeline::before{content:'';position:absolute;top:40px;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--neon-cyan),transparent);z-index:0}
+.step-card{padding:2rem;text-align:center;position:relative;z-index:1}
+.step-number{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;width:64px;height:64px;border-radius:50%;border:2px solid var(--neon-cyan);display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;color:var(--neon-cyan);box-shadow:0 0 25px rgba(0,229,255,.25),inset 0 0 15px rgba(0,229,255,.06);background:var(--deep-navy)}
+.step-card h3{font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;letter-spacing:1px;color:var(--text-primary);margin-bottom:.7rem}
+.step-card p{color:var(--text-muted);font-size:.88rem;line-height:1.7}
+
+/* ======================== FOOTER ======================== */
+footer{position:relative;z-index:1;padding:4rem 2rem 2rem;border-top:1px solid rgba(0,229,255,.08);background:linear-gradient(180deg,transparent,rgba(3,13,26,.8))}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:3rem}
+.footer-brand .nav-logo{display:inline-flex;margin-bottom:1rem;font-size:.9rem}
+.footer-brand p{color:var(--text-muted);font-size:.88rem;line-height:1.7;max-width:300px;margin-bottom:1.2rem}
+.social-links{display:flex;gap:.7rem}
+.soc-link{width:36px;height:36px;border:1px solid rgba(0,229,255,.2);display:flex;align-items:center;justify-content:center;color:var(--text-muted);text-decoration:none;transition:all .3s;font-size:.8rem}
+.soc-link:hover{border-color:var(--neon-cyan);color:var(--neon-cyan);box-shadow:var(--glow-cyan)}
+.footer-col h4{font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;letter-spacing:2px;color:var(--neon-cyan);text-transform:uppercase;margin-bottom:1.2rem}
+.footer-col ul{list-style:none}
+.footer-col ul li{margin-bottom:.6rem}
+.footer-col ul a{color:var(--text-muted);text-decoration:none;font-size:.88rem;transition:color .2s;letter-spacing:.5px}
+.footer-col ul a:hover{color:var(--neon-cyan)}
+.footer-bottom{padding-top:1.5rem;border-top:1px solid rgba(0,229,255,.06);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-bottom p{font-family:'Share Tech Mono',monospace;font-size:.68rem;color:rgba(90,143,168,.5);letter-spacing:1px}
+.version-tag{font-family:'Share Tech Mono',monospace;font-size:.68rem;color:rgba(0,255,136,.4);letter-spacing:2px}
+
+/* ======================== RESPONSIVE ======================== */
+@media(max-width:960px){
+  nav{padding:1rem 1.5rem}
+  .nav-links{display:none}
+  .img-forensics-layout,.video-layout{grid-template-columns:1fr}
+  .steps-timeline{grid-template-columns:1fr}
+  .steps-timeline::before{display:none}
+  .footer-grid{grid-template-columns:1fr;gap:2rem}
+  .result-metrics{grid-template-columns:1fr 1fr}
+  .signal-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .demo-input-row{flex-direction:column}
+  .result-metrics{grid-template-columns:1fr}
+  .ela-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="matrix-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 32 36" stroke-width="1.5" stroke-linejoin="round">
+      <path d="M16 2L4 7v10c0 8.5 5.1 16.1 12 18.9C23 33.1 28 25.5 28 17V7L16 2z"/>
+      <path d="M11 17l3.5 3.5L21 13" stroke-linecap="round"/>
+    </svg>
+    DIGITAL TRUST SHIELD
+  </a>
+  <ul class="nav-links">
+    <li><a href="#problem">Threats</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#how">How It Works</a></li>
+  </ul>
+  <a href="#tools" class="nav-cta">Launch Tools</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <svg class="hero-shield" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <defs>
+        <linearGradient id="sg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00e5ff"/><stop offset="100%" stop-color="#00ff88"/>
+        </linearGradient>
+        <linearGradient id="sg2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#bf5fff"/><stop offset="100%" stop-color="#0066ff"/>
+        </linearGradient>
+      </defs>
+      <path d="M50 5L10 20v30c0 25 18 45 40 55 22-10 40-30 40-55V20L50 5z" stroke="url(#sg)" stroke-width="2" stroke-linejoin="round" fill="rgba(0,229,255,0.05)"/>
+      <path d="M50 5L10 20v30c0 25 18 45 40 55 22-10 40-30 40-55V20L50 5z" stroke="url(#sg2)" stroke-width=".5" stroke-linejoin="round" fill="none" opacity=".4" transform="scale(0.85) translate(7.5,8)"/>
+      <path d="M33 53l11 11L67 37" stroke="url(#sg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="50" cy="50" r="20" stroke="rgba(0,229,255,0.15)" stroke-width="1" fill="none"/>
+      <circle cx="50" cy="50" r="30" stroke="rgba(191,95,255,0.08)" stroke-width="1" fill="none" stroke-dasharray="4 4"/>
+    </svg>
+    <div class="status-badge"><span class="status-dot"></span>v2.0 — IMAGE FORENSICS &amp; VIDEO AI DETECTION ONLINE</div>
+    <h1 class="hero-title">Building Digital Trust<br>in a Fake World</h1>
+    <p class="hero-subtitle">Detect fake news · Analyze image forensics · Identify AI-generated video</p>
+    <div class="typing-container"><span id="typing-text"></span><span class="cursor"></span></div>
+    <div class="hero-buttons">
+      <a href="#tools" class="btn-primary">Launch Analyzer</a>
+      <a href="#problem" class="btn-secondary">Learn More</a>
+    </div>
+    <div class="module-strip">
+      <div class="mod-pill"><span class="dot-cyan"></span>URL VERIFIER</div>
+      <div class="mod-pill"><span class="dot-green"></span>IMAGE FORENSICS LAB</div>
+      <div class="mod-pill"><span class="dot-purple"></span>AI VIDEO DETECTOR</div>
+      <div class="mod-pill"><span class="dot-orange"></span>DEEPFAKE SCANNER</div>
+    </div>
+  </div>
+  <div class="scroll-indicator"><span>SCROLL</span><div class="scroll-arrow"></div></div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">// Threat Landscape</span>
+      <h2 class="section-title">The Internet is <span class="accent">Under Attack</span></h2>
+      <div class="section-divider"></div>
+      <p class="section-subtitle">AI is making fake content indistinguishable from real. Every second counts.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="glass-card problem-card fade-in">
+        <div class="ca ca-tl"></div><div class="ca ca-br"></div>
+        <div class="problem-icon icon-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M3 5h18M3 10h18M3 15h12M3 20h8"/><circle cx="20" cy="18" r="3"/><line x1="23" y1="21" x2="21.5" y2="19.5"/></svg>
+        </div>
+        <h3>Fake News</h3>
+        <p>Fabricated articles designed to mislead and manipulate opinion at mass scale.</p>
+        <div class="stat-number stat-red" data-target="6500">0</div>
+        <div class="stat-label">fake articles per hour</div>
+      </div>
+      <div class="glass-card problem-card fade-in">
+        <div class="ca ca-tl"></div><div class="ca ca-br"></div>
+        <div class="problem-icon icon-yellow">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Deepfakes</h3>
+        <p>AI-generated video of real people — a new weapon of mass deception powered by GANs.</p>
+        <div class="stat-number stat-yellow" data-target="96">0</div>
+        <div class="stat-label">% increase 2023–24</div>
+      </div>
+      <div class="glass-card problem-card fade-in">
+        <div class="ca ca-tl"></div><div class="ca ca-br"></div>
+        <div class="problem-icon icon-cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        </div>
+        <h3>AI-Generated Images</h3>
+        <p>Photorealistic images created by diffusion models weaponized for disinformation campaigns.</p>
+        <div class="stat-number stat-cyan" data-target="70">0</div>
+        <div class="stat-label">% adults exposed weekly</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS HUB -->
+<section id="tools" style="padding:7rem 2rem;">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">// Forensic Analysis Suite</span>
+      <h2 class="section-title">Choose Your <span class="accent">Analysis</span> Module</h2>
+      <div class="section-divider"></div>
+      <p class="section-subtitle">Three specialized engines for comprehensive digital truth verification.</p>
+    </div>
+
+    <!-- TABS -->
+    <div class="tools-tabs fade-in">
+      <button class="tab-btn active-url" onclick="switchTab('url',this)">🔗 URL Verifier</button>
+      <button class="tab-btn" onclick="switchTab('image',this)">🔬 Image Forensics Lab</button>
+      <button class="tab-btn" onclick="switchTab('video',this)">🎬 AI Video Detector</button>
+    </div>
+
+    <!-- ===== TAB: URL ===== -->
+    <div id="tab-url" class="tab-panel active fade-in">
+      <div class="url-panel-inner">
+        <div class="glass-card demo-terminal">
+          <div class="terminal-header">
+            <div class="t-dot t-red"></div><div class="t-dot t-yellow"></div><div class="t-dot t-green"></div>
+            <span class="terminal-title">DTS_URL_VERIFIER v3.1 — CONNECTED</span>
+          </div>
+          <div class="terminal-body">
+            <div class="t-label">Input Source URL or Content</div>
+            <div class="demo-input-row">
+              <input class="cyber-input" type="text" id="demo-url" placeholder="https://paste-article-url.com/story/...">
+              <button class="verify-btn" onclick="runVerification()">VERIFY</button>
+            </div>
+            <div class="demo-type-select">
+              <button class="type-btn active" onclick="setType(this,'trusted')">Trusted Source</button>
+              <button class="type-btn" onclick="setType(this,'suspicious')">Suspicious</button>
+              <button class="type-btn" onclick="setType(this,'fake')">Known Fake</button>
+            </div>
+            <div class="loading-bar" id="loading-bar"><div class="loading-fill" id="loading-fill"></div></div>
+            <div class="loading-steps" id="loading-steps"></div>
+            <!-- Results -->
+            <div class="result-box trusted" id="result-trusted">
+              <div class="result-header">
+                <div><div style="font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--text-muted);letter-spacing:2px;margin-bottom:.3rem">VERDICT</div><div class="result-verdict verdict-trusted">✓ TRUSTED</div></div>
+                <div style="text-align:right"><div class="trust-score" style="color:var(--neon-green)">94<small style="font-size:1rem">/100</small></div><div class="score-label">Trust Score</div></div>
+              </div>
+              <div class="result-metrics">
+                <div class="metric"><span class="metric-val" style="color:var(--neon-green)">A+</span><span class="metric-key">Source Grade</span></div>
+                <div class="metric"><span class="metric-val" style="color:var(--neon-cyan)">12yr</span><span class="metric-key">Domain Age</span></div>
+                <div class="metric"><span class="metric-val" style="color:var(--neon-green)">18</span><span class="metric-key">Corroborating</span></div>
+              </div>
+              <p class="result-detail">Verified against multiple credible sources. Publisher maintains transparent editorial standards with strong accuracy track record. No manipulated media detected.</p>
+              <div class="result-tags"><span class="r-tag tag-green">✓ Verified Publisher</span><span class="r-tag tag-green">✓ Real Images</span><span class="r-tag tag-green">✓ No AI Generation</span><span class="r-tag tag-blue">Reuters Backed</span><span class="r-tag tag-blue">AP Confirmed</span></div>
+            </div>
+            <div class="result-box suspicious" id="result-suspicious">
+              <div class="result-header">
+                <div><div style="font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--text-muted);letter-spacing:2px;margin-bottom:.3rem">VERDICT</div><div class="result-verdict verdict-suspicious">⚠ SUSPICIOUS</div></div>
+                <div style="text-align:right"><div class="trust-score" style="color:var(--neon-yellow)">41<small style="font-size:1rem">/100</small></div><div class="score-label">Trust Score</div></div>
+              </div>
+              <div class="result-metrics">
+                <div class="metric"><span class="metric-val" style="color:var(--neon-yellow)">C−</span><span class="metric-key">Source Grade</span></div>
+                <div class="metric"><span class="metric-val" style="color:var(--neon-yellow)">8mo</span><span class="metric-key">Domain Age</span></div>
+                <div class="metric"><span class="metric-val" style="color:var(--neon-red)">2</span><span class="metric-key">Corroborating</span></div>
+              </div>
+              <p class="result-detail">Content shows warning signs. Publisher has limited editorial transparency, emotional language patterns, and selective framing detected. Verify independently.</p>
+              <div class="result-tags"><span class="r-tag tag-yellow">⚠ New Domain</span><span class="r-tag tag-yellow">⚠ Emotional Language</span><span class="r-tag tag-red">✗ Unverified Claims</span></div>
+            </div>
+            <div class="result-box fake" id="result-fake">
+              <div class="result-header">
+                <div><div style="font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--text-muted);letter-spacing:2px;margin-bottom:.3rem">VERDICT</div><div class="result-verdict verdict-fake">✗ FAKE DETECTED</div></div>
+                <div style="text-align:right"><div class="trust-score" style="color:var(--neon-red)">07<small style="font-size:1rem">/100</small></div><div class="score-label">Trust Score</div></div>
+              </div>
+              <div class="result-metrics">
+                <div class="metric"><span class="metric-val" style="color:var(--neon-red)">F</span><span class="metric-key">Source Grade</span></div>
+                <div class="metric"><span class="metric-val" style="color:var(--neon-red)">3wk</span><span class="metric-key">Domain Age</span></div>
+                <div class="metric"><span class="metric-val" style="color:var(--neon-red)">0</span><span class="metric-key">Corroborating</span></div>
+              </div>
+              <p class="result-detail">WARNING: Deliberately fabricated misinformation. Domain registered 3 weeks ago. Manipulated image artifacts (92% AI confidence). Flagged by 7 fact-checking agencies.</p>
+              <div class="result-tags"><span class="r-tag tag-red">✗ Flagged by FactCheck.org</span><span class="r-tag tag-red">✗ Manipulated Images</span><span class="r-tag tag-red">✗ Fabricated Quotes</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: IMAGE FORENSICS ===== -->
+    <div id="tab-image" class="tab-panel fade-in">
+      <div class="img-forensics-layout">
+        <!-- Left: Upload + Options -->
+        <div>
+          <div class="upload-zone glass-card" id="img-drop-zone" onclick="document.getElementById('img-file-input').click()">
+            <div class="ca ca-tl"></div><div class="ca ca-br"></div>
+            <input type="file" id="img-file-input" accept="image/*" onchange="handleImageUpload(event)">
+            <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+            <h4>DROP IMAGE HERE</h4>
+            <p>Or click to browse your files</p>
+            <div class="file-types">
+              <span class="file-type-tag">JPG</span><span class="file-type-tag">PNG</span><span class="file-type-tag">WEBP</span><span class="file-type-tag">BMP</span><span class="file-type-tag">TIFF</span>
+            </div>
+          </div>
+
+          <div class="img-preview-container glass-card" style="margin-top:1.5rem" id="img-preview-wrap">
+            <div class="img-placeholder" id="img-placeholder">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <p>Image preview will appear here</p>
+            </div>
+            <img id="img-preview" class="img-preview" alt="Preview">
+          </div>
+
+          <div style="margin-top:1.5rem">
+            <div class="t-label" style="margin-bottom:1rem">SELECT ANALYSIS MODULES</div>
+            <div class="analysis-options">
+              <div class="analysis-opt selected" onclick="toggleOpt(this)"><input type="checkbox" checked><label>ELA Analysis</label></div>
+              <div class="analysis-opt selected" onclick="toggleOpt(this)"><input type="checkbox" checked><label>Metadata Scan</label></div>
+              <div class="analysis-opt selected" onclick="toggleOpt(this)"><input type="checkbox" checked><label>AI Generation Detection</label></div>
+              <div class="analysis-opt selected" onclick="toggleOpt(this)"><input type="checkbox" checked><label>Clone Detection</label></div>
+              <div class="analysis-opt selected" onclick="toggleOpt(this)"><input type="checkbox" checked><label>Noise Analysis</label></div>
+              <div class="analysis-opt" onclick="toggleOpt(this)"><input type="checkbox"><label>Steganography Scan</label></div>
+            </div>
+            <button class="scan-btn-green" onclick="runImageForensics()">⟫ RUN FORENSIC SCAN</button>
+          </div>
+        </div>
+
+        <!-- Right: Results -->
+        <div>
+          <div class="glass-card img-result-panel" id="img-result-panel">
+            <div class="ca ca-tl"></div><div class="ca ca-tr"></div>
+            <div class="panel-header">
+              <span>FORENSIC ANALYSIS REPORT</span>
+              <span id="img-verdict-badge" style="font-size:.75rem;padding:.2rem .8rem;border-radius:2px">PENDING</span>
+            </div>
+            <div class="panel-body">
+              <!-- Scan overlay -->
+              <div class="scan-overlay-wrap" id="forensic-preview-wrap" style="display:none">
+                <img id="forensic-preview-img" src="" alt="">
+                <canvas id="heatmap-canvas" class="heatmap"></canvas>
+                <div class="scan-line" id="img-scan-line"></div>
+              </div>
+
+              <!-- ELA canvases -->
+              <div class="ela-section" id="ela-section" style="display:none">
+                <div class="ela-label">Error Level Analysis (ELA)</div>
+                <div class="ela-grid">
+                  <div class="ela-item"><canvas id="ela-original" height="80"></canvas><div class="ela-item-label">Original</div></div>
+                  <div class="ela-item"><canvas id="ela-compressed" height="80"></canvas><div class="ela-item-label">ELA Map</div></div>
+                  <div class="ela-item"><canvas id="ela-highlighted" height="80"></canvas><div class="ela-item-label">Anomalies</div></div>
+                </div>
+              </div>
+
+              <!-- Forensic metrics -->
+              <div class="forensic-metrics" id="forensic-metrics">
+                <div style="font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--text-muted);letter-spacing:2px;padding:2rem;text-align:center">
+                  Upload an image and run the forensic scan to see analysis results here.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: VIDEO AI DETECTOR ===== -->
+    <div id="tab-video" class="tab-panel fade-in">
+      <div class="video-layout">
+        <!-- Left -->
+        <div>
+          <div class="video-upload-zone glass-card" id="vid-drop-zone" onclick="document.getElementById('vid-file-input').click()">
+            <div class="ca ca-tl"></div><div class="ca ca-br"></div>
+            <input type="file" id="vid-file-input" accept="video/*" onchange="handleVideoUpload(event)">
+            <div class="video-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+            <h4>DROP VIDEO HERE</h4>
+            <p>MP4, MOV, AVI, WEBM supported</p>
+          </div>
+
+          <div class="glass-card video-player-wrap" style="margin-top:1.5rem" id="vid-player-wrap">
+            <div class="vid-placeholder" id="vid-placeholder">
+              <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <p>Video preview appears here</p>
+            </div>
+            <video id="vid-preview" controls></video>
+            <!-- Scan overlay and face boxes -->
+            <div class="vid-scan-overlay" id="vid-scan-overlay">
+              <div class="vid-scan-h"></div>
+              <div class="vid-scan-v"></div>
+            </div>
+            <!-- Face detection boxes (simulated) -->
+            <div class="face-box real" id="face-box-1" style="top:20%;left:25%;width:30%;height:40%">
+              <span class="face-label real-lbl">REAL — 91%</span>
+            </div>
+            <div class="face-box fake-face" id="face-box-2" style="top:15%;left:55%;width:25%;height:38%">
+              <span class="face-label fake-lbl">DEEPFAKE — 87%</span>
+            </div>
+          </div>
+
+          <!-- Waveform -->
+          <div class="waveform-section glass-card" style="padding:1rem;margin-top:1rem">
+            <div class="waveform-label">Audio Waveform Analysis</div>
+            <canvas id="waveform" width="600" height="60"></canvas>
+          </div>
+
+          <div style="margin-top:1.5rem">
+            <div class="t-label" style="margin-bottom:1rem">DETECTION MODULES</div>
+            <div class="vid-analysis-opts">
+              <div class="vid-opt selected" onclick="toggleVidOpt(this)"><input type="checkbox" checked><label>Facial Landmark Analysis</label></div>
+              <div class="vid-opt selected" onclick="toggleVidOpt(this)"><input type="checkbox" checked><label>GAN Artifact Detection</label></div>
+              <div class="vid-opt selected" onclick="toggleVidOpt(this)"><input type="checkbox" checked><label>Audio Sync Verification</label></div>
+              <div class="vid-opt selected" onclick="toggleVidOpt(this)"><input type="checkbox" checked><label>Temporal Consistency</label></div>
+              <div class="vid-opt" onclick="toggleVidOpt(this)"><input type="checkbox"><label>Compression Forensics</label></div>
+              <div class="vid-opt" onclick="toggleVidOpt(this)"><input type="checkbox"><label>Background Coherence</label></div>
+            </div>
+            <button class="scan-btn-purple" onclick="runVideoAnalysis()">⟫ ANALYZE VIDEO FOR AI</button>
+          </div>
+        </div>
+
+        <!-- Right: Results -->
+        <div>
+          <div class="glass-card vid-result-panel" id="vid-result-panel" style="display:none">
+            <div class="ca ca-tl"></div><div class="ca ca-tr"></div>
+            <div class="vr-header" id="vr-header">
+              <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--text-muted);letter-spacing:2px;margin-bottom:.3rem">AI DETECTION VERDICT</div>
+                <div class="vr-verdict" id="vr-verdict-text">ANALYZING...</div>
+              </div>
+              <div style="text-align:right">
+                <div class="trust-score" id="vr-score" style="font-size:2rem">—</div>
+                <div class="score-label">AI Probability</div>
+              </div>
+            </div>
+            <div class="vr-body">
+              <!-- Donut chart -->
+              <div class="donut-row">
+                <div class="donut-wrap">
+                  <canvas id="donut-canvas" width="110" height="110"></canvas>
+                  <div class="donut-center">
+                    <div class="donut-pct" id="donut-pct">—</div>
+                    <div class="donut-lbl">AI-GEN</div>
+                  </div>
+                </div>
+                <div style="flex:1">
+                  <p style="color:var(--text-muted);font-size:.88rem;line-height:1.7" id="vr-summary">Run the analysis to see the AI detection report.</p>
+                </div>
+              </div>
+
+              <!-- Frame strip -->
+              <div id="frame-strip-section" style="display:none">
+                <div class="frame-strip-label">Frame-by-Frame Analysis</div>
+                <div class="frame-strip" id="frame-strip"></div>
+              </div>
+
+              <!-- Forensic metrics -->
+              <div class="forensic-metrics" id="vid-forensic-metrics" style="margin-top:1.5rem">
+                <!-- Populated by JS -->
+              </div>
+
+              <!-- Signal grid -->
+              <div class="signal-grid" id="vid-signal-grid" style="display:none">
+                <div class="signal-item"><div class="s-name">Facial Coherence</div><div class="s-val" id="sig-face" style="color:var(--neon-green)">—</div></div>
+                <div class="signal-item"><div class="s-name">Audio–Video Sync</div><div class="s-val" id="sig-audio" style="color:var(--neon-cyan)">—</div></div>
+                <div class="signal-item"><div class="s-name">GAN Fingerprint</div><div class="s-val" id="sig-gan" style="color:var(--neon-purple)">—</div></div>
+                <div class="signal-item"><div class="s-name">Temporal Stability</div><div class="s-val" id="sig-temp" style="color:var(--neon-yellow)">—</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Placeholder state -->
+          <div class="glass-card" id="vid-placeholder-result" style="padding:3rem 2rem;text-align:center">
+            <div class="ca ca-tl"></div><div class="ca ca-br"></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1" style="width:56px;height:56px;stroke:rgba(191,95,255,.3);margin:0 auto 1.5rem;display:block"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            <h3 style="font-family:'Orbitron',monospace;font-size:.9rem;color:var(--neon-purple);letter-spacing:1px;margin-bottom:.8rem">AI VIDEO DETECTOR</h3>
+            <p style="color:var(--text-muted);font-size:.88rem;line-height:1.7;max-width:320px;margin:0 auto">Upload a video and run the analysis to detect AI-generated content, deepfakes, and manipulated footage.</p>
+            <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
+              <span class="r-tag tag-purple">Facial GAN Detection</span>
+              <span class="r-tag tag-purple">Audio Sync Check</span>
+              <span class="r-tag tag-blue">Frame Analysis</span>
+              <span class="r-tag tag-blue">Temporal Coherence</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">// The Process</span>
+      <h2 class="section-title">How It <span class="accent">Works</span></h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="steps-timeline">
+      <div class="glass-card step-card fade-in">
+        <div class="step-number">01</div>
+        <h3>Upload or Paste</h3>
+        <p>Submit any URL, image file, or video. Our system accepts content from any source or platform.</p>
+      </div>
+      <div class="glass-card step-card fade-in">
+        <div class="step-number">02</div>
+        <h3>Multi-Model AI Scan</h3>
+        <p>Seven specialized neural models run simultaneously — ELA analysis, GAN fingerprinting, facial landmark detection, temporal consistency checks and more.</p>
+      </div>
+      <div class="glass-card step-card fade-in">
+        <div class="step-number">03</div>
+        <h3>Full Forensic Report</h3>
+        <p>Receive a detailed verdict with trust score, anomaly heatmap, frame-by-frame breakdown, and signal analysis — all in under 3 seconds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo" style="font-size:.88rem;display:inline-flex;margin-bottom:1rem">
+          <svg viewBox="0 0 32 36" style="width:22px;height:22px;stroke:var(--neon-cyan);fill:none;filter:drop-shadow(0 0 6px var(--neon-cyan));stroke-width:1.5;stroke-linejoin:round"><path d="M16 2L4 7v10c0 8.5 5.1 16.1 12 18.9C23 33.1 28 25.5 28 17V7L16 2z"/><path d="M11 17l3.5 3.5L21 13" stroke-linecap="round"/></svg>
+          DIGITAL TRUST SHIELD v2
+        </a>
+        <p>An open-source initiative to combat misinformation, deepfakes, and AI-generated disinformation. Built for journalists, researchers, and everyday users.</p>
+        <div class="social-links">
+          <a href="#" class="soc-link">𝕏</a><a href="#" class="soc-link">in</a><a href="#" class="soc-link">GH</a><a href="#" class="soc-link">YT</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Modules</h4>
+        <ul>
+          <li><a href="#tools">URL Verifier</a></li>
+          <li><a href="#tools">Image Forensics Lab</a></li>
+          <li><a href="#tools">AI Video Detector</a></li>
+          <li><a href="#tools">Deepfake Scanner</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Research Papers</a></li>
+          <li><a href="#">API Docs</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 DIGITAL TRUST SHIELD — FOR EDUCATIONAL & DEMONSTRATION PURPOSES</p>
+      <div class="version-tag">v2.0.0 // BUILD 2025.03.20</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ======================== SCRIPTS ======================== -->
+<script>
+// MATRIX RAIN
+(function(){
+  const canvas=document.getElementById('matrix-canvas'),ctx=canvas.getContext('2d');
+  let W,H,cols,drops;
+  const chars='01アイウエオカキクケコABCDEFG0123456789<>{}[]⟨⟩∑∂∇';
+  function init(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;cols=Math.floor(W/13);drops=Array(cols).fill(1)}
+  function draw(){ctx.fillStyle='rgba(2,4,8,0.05)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#00ff88';ctx.font='13px Share Tech Mono,monospace';drops.forEach((y,i)=>{ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*13,y*13);if(y*13>H&&Math.random()>.975)drops[i]=0;drops[i]++})}
+  init();setInterval(draw,40);window.addEventListener('resize',init);
+})();
+
+// TYPING
+(function(){
+  const phrases=['Scanning for misinformation...','Running ELA image analysis...','Detecting GAN fingerprints...','Verifying facial landmarks...','Cross-referencing 50M sources...','Analyzing audio-video sync...'];
+  let pi=0,ci=0,del=false;
+  const el=document.getElementById('typing-text');
+  function type(){
+    const p=phrases[pi];
+    if(!del){el.textContent=p.slice(0,++ci);if(ci===p.length){del=true;setTimeout(type,2000);return}}
+    else{el.textContent=p.slice(0,--ci);if(ci===0){del=false;pi=(pi+1)%phrases.length}}
+    setTimeout(type,del?40:60);
+  }
+  setTimeout(type,600);
+})();
+
+// COUNTERS
+function animateCounters(){
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const t=parseInt(el.dataset.target);let c=0;
+    const s=setInterval(()=>{c=Math.min(c+t/60,t);el.textContent=Math.floor(c).toLocaleString();if(c>=t)clearInterval(s)},25);
+  });
+}
+
+// FADE IN OBSERVER
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(e.target.closest('#problem'))animateCounters();
+    }
+  });
+},{threshold:.15});
+document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
+
+// TABS
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active-url','active-img','active-vid')});
+  document.getElementById('tab-'+name).classList.add('active');
+  const cls=name==='url'?'active-url':name==='image'?'active-img':'active-vid';
+  btn.classList.add(cls);
+}
+
+// URL VERIFIER
+let currentType='trusted';
+function setType(btn,type){
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');currentType=type;
+  ['trusted','suspicious','fake'].forEach(t=>document.getElementById('result-'+t).style.display='none');
+}
+const urlSteps=['Initializing neural scan...','Fetching source metadata...','Running content analysis...','Cross-referencing databases...','Analyzing media authenticity...','Computing trust score...','Finalizing verdict...'];
+function runVerification(){
+  ['trusted','suspicious','fake'].forEach(t=>document.getElementById('result-'+t).style.display='none');
+  const lb=document.getElementById('loading-bar'),ls=document.getElementById('loading-steps'),fill=document.getElementById('loading-fill');
+  lb.classList.add('active');ls.classList.add('active');fill.style.width='0%';
+  let si=0,prog=0;
+  const iv=setInterval(()=>{if(si<urlSteps.length){ls.textContent='> '+urlSteps[si++];prog=Math.min(prog+100/urlSteps.length,95);fill.style.width=prog+'%'}},350);
+  setTimeout(()=>{clearInterval(iv);fill.style.width='100%';ls.textContent='> Scan complete.';
+    setTimeout(()=>{lb.classList.remove('active');ls.classList.remove('active');const r=document.getElementById('result-'+currentType);r.style.display='block';r.scrollIntoView({behavior:'smooth',block:'nearest'})},400);
+  },urlSteps.length*350+300);
+}
+document.getElementById('demo-url').addEventListener('keydown',e=>{if(e.key==='Enter')runVerification()});
+
+// TOGGLE OPTS
+function toggleOpt(el){el.classList.toggle('selected');el.querySelector('input').checked=el.classList.contains('selected')}
+function toggleVidOpt(el){el.classList.toggle('selected');el.querySelector('input').checked=el.classList.contains('selected')}
+
+// ======================== IMAGE FORENSICS ========================
+let uploadedImage=null;
+
+// Drag and drop
+const imgDrop=document.getElementById('img-drop-zone');
+imgDrop.addEventListener('dragover',e=>{e.preventDefault();imgDrop.classList.add('dragover')});
+imgDrop.addEventListener('dragleave',()=>imgDrop.classList.remove('dragover'));
+imgDrop.addEventListener('drop',e=>{e.preventDefault();imgDrop.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f)});
+
+function handleImageUpload(e){const f=e.target.files[0];if(f)loadImageFile(f)}
+
+function loadImageFile(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    uploadedImage=ev.target.result;
+    const preview=document.getElementById('img-preview');
+    preview.src=uploadedImage;preview.style.display='block';
+    document.getElementById('img-placeholder').style.display='none';
+    document.getElementById('forensic-metrics').innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:.75rem;color:var(--neon-green);letter-spacing:1px;padding:1rem;text-align:center">✓ Image loaded — click FORENSIC SCAN to analyze</div>';
+  };
+  reader.readAsDataURL(file);
+}
+
+function runImageForensics(){
+  if(!uploadedImage){
+    alert('Please upload an image first.');return;
+  }
+
+  const panel=document.getElementById('forensic-metrics');
+  const scanLine=document.getElementById('img-scan-line');
+  const previewWrap=document.getElementById('forensic-preview-wrap');
+  const forensicImg=document.getElementById('forensic-preview-img');
+  const elaSection=document.getElementById('ela-section');
+
+  panel.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:.75rem;color:var(--neon-cyan);padding:.5rem;letter-spacing:1px">Initializing forensic scan...</div>';
+  previewWrap.style.display='none';
+  elaSection.style.display='none';
+
+  const steps=['Loading image into memory...','Running ELA compression analysis...','Scanning for clone artifacts...','Detecting AI generation signatures...','Analyzing noise distribution...','Computing metadata integrity...','Generating anomaly heatmap...'];
+  let si=0;
+  const iv=setInterval(()=>{
+    if(si<steps.length){panel.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:.75rem;color:var(--neon-cyan);padding:.5rem;letter-spacing:1px">&gt; '+steps[si++]+'</div>'}
+  },400);
+
+  setTimeout(()=>{
+    clearInterval(iv);
+    // Load image into forensic preview
+    forensicImg.src=uploadedImage;
+    forensicImg.onload=()=>{
+      previewWrap.style.display='block';
+      drawHeatmapOverlay();
+      elaSection.style.display='block';
+      drawELACanvases();
+      renderForensicMetrics();
+      updateImageVerdictBadge();
+    };
+  },steps.length*400+300);
+}
+
+function drawHeatmapOverlay(){
+  const canvas=document.getElementById('heatmap-canvas');
+  const img=document.getElementById('forensic-preview-img');
+  canvas.width=img.naturalWidth||img.width;
+  canvas.height=img.naturalHeight||img.height;
+  const ctx=canvas.getContext('2d');
+  // Simulated heatmap — random splotches in suspicious areas
+  for(let i=0;i<12;i++){
+    const x=Math.random()*canvas.width,y=Math.random()*canvas.height;
+    const r=20+Math.random()*50;
+    const grad=ctx.createRadialGradient(x,y,0,x,y,r);
+    const intensity=Math.random();
+    if(intensity>0.7){grad.addColorStop(0,'rgba(255,34,68,0.6)');grad.addColorStop(1,'rgba(255,34,68,0)')}
+    else if(intensity>0.4){grad.addColorStop(0,'rgba(255,221,0,0.4)');grad.addColorStop(1,'rgba(255,221,0,0)')}
+    else{grad.addColorStop(0,'rgba(0,255,136,0.25)');grad.addColorStop(1,'rgba(0,255,136,0)')}
+    ctx.fillStyle=grad;ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+function drawELACanvases(){
+  const img=new Image();img.src=uploadedImage;
+  img.onload=()=>{
+    // Original
+    const c1=document.getElementById('ela-original');c1.width=150;c1.height=80;
+    const x1=c1.getContext('2d');x1.drawImage(img,0,0,150,80);
+    // ELA Map (simulated — brightness enhanced)
+    const c2=document.getElementById('ela-compressed');c2.width=150;c2.height=80;
+    const x2=c2.getContext('2d');x2.drawImage(img,0,0,150,80);
+    const d=x2.getImageData(0,0,150,80);
+    for(let i=0;i<d.data.length;i+=4){
+      const v=Math.min(255,(d.data[i]+d.data[i+1]+d.data[i+2])/3*2.5);
+      d.data[i]=v;d.data[i+1]=Math.floor(v*0.1);d.data[i+2]=Math.floor(v*0.3);
+    }
+    x2.putImageData(d,0,0);
+    // Anomaly Highlight
+    const c3=document.getElementById('ela-highlighted');c3.width=150;c3.height=80;
+    const x3=c3.getContext('2d');x3.drawImage(img,0,0,150,80);
+    const d3=x3.getImageData(0,0,150,80);
+    for(let i=0;i<d3.data.length;i+=4){
+      const avg=(d3.data[i]+d3.data[i+1]+d3.data[i+2])/3;
+      if(avg>180){d3.data[i]=255;d3.data[i+1]=34;d3.data[i+2]=68}
+      else{d3.data[i]*=0.3;d3.data[i+1]*=0.3;d3.data[i+2]*=0.3}
+    }
+    x3.putImageData(d3,0,0);
+  };
+}
+
+function renderForensicMetrics(){
+  const isReal=Math.random()>0.45;
+  const aiScore=isReal?Math.floor(Math.random()*25+5):Math.floor(Math.random()*40+55);
+  const elaScore=isReal?Math.floor(Math.random()*20+10):Math.floor(Math.random()*50+40);
+  const noiseScore=isReal?Math.floor(Math.random()*15+85):Math.floor(Math.random()*30+20);
+  const cloneScore=isReal?Math.floor(Math.random()*8):Math.floor(Math.random()*60+20);
+  const metaScore=isReal?Math.floor(Math.random()*10+85):Math.floor(Math.random()*40+20);
+
+  const metrics=[
+    {name:'AI Generation Probability',val:aiScore+'%',color:aiScore>50?'red':aiScore>25?'yellow':'green',width:aiScore},
+    {name:'ELA Anomaly Level',val:elaScore+'%',color:elaScore>45?'red':elaScore>25?'yellow':'green',width:elaScore},
+    {name:'Noise Pattern Consistency',val:noiseScore+'%',color:noiseScore<40?'red':noiseScore<65?'yellow':'green',width:noiseScore},
+    {name:'Clone/Copy Detection',val:cloneScore+'%',color:cloneScore>40?'red':cloneScore>15?'yellow':'green',width:cloneScore},
+    {name:'Metadata Integrity',val:metaScore+'%',color:metaScore<40?'red':metaScore<65?'yellow':'green',width:metaScore},
+    {name:'JPEG Compression Artifacts',val:isReal?'Normal':'Anomalous',color:isReal?'cyan':'red',width:isReal?20:75},
+  ];
+  const colorMap={green:'var(--neon-green)',red:'var(--neon-red)',yellow:'var(--neon-yellow)',cyan:'var(--neon-cyan)'};
+  document.getElementById('forensic-metrics').innerHTML=metrics.map(m=>`
+    <div class="f-metric">
+      <div class="f-metric-header">
+        <span class="f-metric-name">${m.name}</span>
+        <span class="f-metric-val" style="color:${colorMap[m.color]}">${m.val}</span>
+      </div>
+      <div class="f-bar"><div class="f-bar-fill ${m.color}" data-w="${m.width}" style="width:0%"></div></div>
+    </div>
+  `).join('');
+
+  setTimeout(()=>{document.querySelectorAll('.f-bar-fill[data-w]').forEach(b=>{b.style.width=b.dataset.w+'%'})},100);
+}
+
+function updateImageVerdictBadge(){
+  const badge=document.getElementById('img-verdict-badge');
+  const metrics=document.querySelectorAll('.f-metric-val');
+  // Simplified: random verdict for demo
+  const r=Math.random();
+  if(r>0.55){badge.textContent='LIKELY AUTHENTIC';badge.style.background='rgba(0,255,136,.15)';badge.style.color='var(--neon-green)';badge.style.border='1px solid rgba(0,255,136,.3)'}
+  else if(r>0.3){badge.textContent='SUSPICIOUS';badge.style.background='rgba(255,221,0,.15)';badge.style.color='var(--neon-yellow)';badge.style.border='1px solid rgba(255,221,0,.3)'}
+  else{badge.textContent='AI GENERATED';badge.style.background='rgba(255,34,68,.15)';badge.style.color='var(--neon-red)';badge.style.border='1px solid rgba(255,34,68,.3)'}
+}
+
+// ======================== VIDEO AI DETECTOR ========================
+// Drag & drop
+const vidDrop=document.getElementById('vid-drop-zone');
+vidDrop.addEventListener('dragover',e=>{e.preventDefault();vidDrop.classList.add('dragover')});
+vidDrop.addEventListener('dragleave',()=>vidDrop.classList.remove('dragover'));
+vidDrop.addEventListener('drop',e=>{e.preventDefault();vidDrop.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('video/'))loadVideoFile(f)});
+
+function handleVideoUpload(e){const f=e.target.files[0];if(f)loadVideoFile(f)}
+
+function loadVideoFile(file){
+  const url=URL.createObjectURL(file);
+  const vid=document.getElementById('vid-preview');
+  vid.src=url;vid.style.display='block';
+  document.getElementById('vid-placeholder').style.display='none';
+  drawFakeWaveform();
+}
+
+function drawFakeWaveform(){
+  const canvas=document.getElementById('waveform');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,600,60);
+  ctx.strokeStyle='rgba(191,95,255,0.7)';ctx.lineWidth=1.5;ctx.beginPath();
+  for(let x=0;x<600;x++){
+    const y=30+Math.sin(x*0.05)*8+Math.sin(x*0.13)*5+(Math.random()-0.5)*4;
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // Anomaly highlights
+  ctx.strokeStyle='rgba(255,34,68,0.6)';ctx.lineWidth=2;
+  [[180,220],[380,420]].forEach(([a,b])=>{
+    ctx.beginPath();
+    for(let x=a;x<b;x++){
+      const y=30+Math.sin(x*0.05)*15+(Math.random()-0.5)*8;
+      x===a?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  });
+}
+
+let vidResult='deepfake'; // default demo result
+function runVideoAnalysis(){
+  const vid=document.getElementById('vid-preview');
+  if(!vid.src||vid.style.display==='none'){alert('Please upload a video first.');return}
+
+  const panel=document.getElementById('vid-result-panel');
+  const placeholder=document.getElementById('vid-placeholder-result');
+  placeholder.style.display='none';
+  panel.style.display='block';
+
+  // Show scan overlay
+  const overlay=document.getElementById('vid-scan-overlay');
+  overlay.classList.add('active');
+
+  document.getElementById('vr-verdict-text').textContent='ANALYZING...';
+  document.getElementById('vr-score').textContent='—';
+  document.getElementById('donut-pct').textContent='...';
+  document.getElementById('vr-summary').textContent='Running multi-model AI detection...';
+  document.getElementById('vid-signal-grid').style.display='none';
+  document.getElementById('frame-strip-section').style.display='none';
+  document.getElementById('vid-forensic-metrics').innerHTML='';
+
+  const vsteps=['Extracting keyframes...','Running facial landmark analysis...','Detecting GAN fingerprints...','Verifying audio-video sync...','Analyzing temporal consistency...','Running GAN artifact classifier...','Computing final AI probability...'];
+  let si=0,prog=0;
+  const iv=setInterval(()=>{
+    if(si<vsteps.length){
+      document.getElementById('vr-summary').textContent='> '+vsteps[si++];
+      prog=Math.min(prog+100/vsteps.length,95);
+    }
+  },450);
+
+  setTimeout(()=>{
+    clearInterval(iv);overlay.classList.remove('active');
+    const isDeepfake=Math.random()>0.4;
+    const aiProb=isDeepfake?Math.floor(Math.random()*25+70):Math.floor(Math.random()*20+5);
+    renderVideoResult(isDeepfake,aiProb);
+  },vsteps.length*450+500);
+}
+
+function renderVideoResult(isDeepfake,aiProb){
+  const header=document.getElementById('vr-header');
+  const verdict=document.getElementById('vr-verdict-text');
+  const score=document.getElementById('vr-score');
+  const summary=document.getElementById('vr-summary');
+  const donutPct=document.getElementById('donut-pct');
+  const sigGrid=document.getElementById('vid-signal-grid');
+  const frameSection=document.getElementById('frame-strip-section');
+
+  // Face boxes
+  document.getElementById('face-box-1').style.display=isDeepfake?'block':'none';
+  document.getElementById('face-box-2').style.display=isDeepfake?'block':'none';
+
+  if(isDeepfake){
+    verdict.textContent='⚠ DEEPFAKE DETECTED';verdict.style.color='var(--neon-red)';
+    score.textContent=aiProb+'%';score.style.color='var(--neon-red)';
+    header.style.borderBottomColor='rgba(255,34,68,.2)';
+    summary.textContent='High-confidence AI manipulation detected. Facial regions show GAN generation artifacts. Audio-visual sync discrepancies found in '+Math.floor(Math.random()*12+5)+' frame segments.';
+    document.getElementById('sig-face').textContent='ANOMALOUS';document.getElementById('sig-face').style.color='var(--neon-red)';
+    document.getElementById('sig-audio').textContent='DESYNC '+Math.floor(Math.random()*80+40)+'ms';document.getElementById('sig-audio').style.color='var(--neon-yellow)';
+    document.getElementById('sig-gan').textContent='DETECTED';document.getElementById('sig-gan').style.color='var(--neon-red)';
+    document.getElementById('sig-temp').textContent='UNSTABLE';document.getElementById('sig-temp').style.color='var(--neon-red)';
+  } else {
+    verdict.textContent='✓ LIKELY AUTHENTIC';verdict.style.color='var(--neon-green)';
+    score.textContent=aiProb+'%';score.style.color='var(--neon-green)';
+    header.style.borderBottomColor='rgba(0,255,136,.2)';
+    summary.textContent='No significant AI manipulation detected. Facial landmarks consistent throughout. Audio-visual synchronization within normal parameters. Compression artifacts match expected camera sensor patterns.';
+    document.getElementById('sig-face').textContent='CONSISTENT';document.getElementById('sig-face').style.color='var(--neon-green)';
+    document.getElementById('sig-audio').textContent='SYNCED <12ms';document.getElementById('sig-audio').style.color='var(--neon-green)';
+    document.getElementById('sig-gan').textContent='NOT FOUND';document.getElementById('sig-gan').style.color='var(--neon-green)';
+    document.getElementById('sig-temp').textContent='STABLE';document.getElementById('sig-temp').style.color='var(--neon-green)';
+  }
+
+  donutPct.textContent=aiProb+'%';
+  donutPct.style.color=isDeepfake?'var(--neon-red)':aiProb>15?'var(--neon-yellow)':'var(--neon-green)';
+  drawDonut(aiProb,isDeepfake);
+  drawFrameStrip(isDeepfake);
+  renderVideoMetrics(isDeepfake,aiProb);
+  sigGrid.style.display='grid';
+  frameSection.style.display='block';
+}
+
+function drawDonut(pct,isDeepfake){
+  const canvas=document.getElementById('donut-canvas');
+  const ctx=canvas.getContext('2d');
+  const cx=55,cy=55,r=42,lw=10;
+  ctx.clearRect(0,0,110,110);
+  // BG arc
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=lw;ctx.stroke();
+  // Fill arc
+  const angle=(pct/100)*Math.PI*2-Math.PI/2;
+  const color=isDeepfake?'#ff2244':pct>15?'#ffdd00':'#00ff88';
+  ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,angle);ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
+  // Glow
+  ctx.shadowBlur=15;ctx.shadowColor=color;
+  ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,angle);ctx.stroke();
+  ctx.shadowBlur=0;
+}
+
+function drawFrameStrip(isDeepfake){
+  const strip=document.getElementById('frame-strip');
+  strip.innerHTML='';
+  const count=12;
+  for(let i=0;i<count;i++){
+    const div=document.createElement('div');div.className='frame-thumb';
+    const canvas=document.createElement('canvas');canvas.width=52;canvas.height=36;
+    const ctx=canvas.getContext('2d');
+    const hue=isDeepfake&&Math.random()>0.4?0:120;
+    const r=isDeepfake&&Math.random()>0.5?Math.floor(Math.random()*80+50):20;
+    ctx.fillStyle=`hsl(${hue},${isDeepfake?70:20}%,${r}%)`;
+    ctx.fillRect(0,0,52,36);
+    for(let j=0;j<8;j++){
+      ctx.fillStyle=`rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},.15)`;
+      ctx.fillRect(Math.random()*52,Math.random()*36,Math.random()*15+5,Math.random()*15+5);
+    }
+    const badge=document.createElement('div');
+    const label=isDeepfake&&Math.random()>0.35?'FAKE':Math.random()>0.7?'SUS':'REAL';
+    badge.className='frame-badge '+(label==='FAKE'?'fake-b':label==='SUS'?'sus':'real');
+    badge.textContent=label;
+    div.appendChild(canvas);div.appendChild(badge);strip.appendChild(div);
+  }
+}
+
+function renderVideoMetrics(isDeepfake,aiProb){
+  const metrics=[
+    {name:'Facial Landmark Deviation',val:isDeepfake?Math.floor(Math.random()*30+15)+'px avg':Math.floor(Math.random()*4+1)+'px avg',color:isDeepfake?'red':'green',width:isDeepfake?65:15},
+    {name:'Blinking Pattern Naturalness',val:isDeepfake?Math.floor(Math.random()*30+20)+'%':'Natural',color:isDeepfake?'yellow':'green',width:isDeepfake?40:90},
+    {name:'Skin Texture Coherence',val:isDeepfake?'Low':'High',color:isDeepfake?'red':'green',width:isDeepfake?25:85},
+    {name:'Background Consistency',val:isDeepfake?Math.floor(Math.random()*40+30)+'%':'Stable',color:isDeepfake?'yellow':'green',width:isDeepfake?50:92},
+    {name:'Overall AI Confidence',val:aiProb+'%',color:aiProb>50?'red':aiProb>20?'yellow':'green',width:aiProb},
+  ];
+  const colorMap={green:'var(--neon-green)',red:'var(--neon-red)',yellow:'var(--neon-yellow)',cyan:'var(--neon-cyan)'};
+  document.getElementById('vid-forensic-metrics').innerHTML=metrics.map(m=>`
+    <div class="f-metric">
+      <div class="f-metric-header">
+        <span class="f-metric-name">${m.name}</span>
+        <span class="f-metric-val" style="color:${colorMap[m.color]}">${m.val}</span>
+      </div>
+      <div class="f-bar"><div class="f-bar-fill ${m.color}" data-w="${m.width}" style="width:0%"></div></div>
+    </div>
+  `).join('');
+  setTimeout(()=>{document.querySelectorAll('#vid-forensic-metrics .f-bar-fill[data-w]').forEach(b=>{b.style.width=b.dataset.w+'%'})},100);
+}
+
+// Draw placeholder waveform on load
+drawFakeWaveform();
+</script>
+</body>
+</html>
